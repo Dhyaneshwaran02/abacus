@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abacus Assignment</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-group input, .input-group button {
+      margin: 5px;
+    }
+    .question-box {
+      margin-top: 20px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #ccc;
+    }
+    #question-box {
+      font-size: 5rem;
+      font-weight: bold;
+      color: #333;
+    }
+  
+    #answer-box {
+      font-size: 5rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Abacus Assignment</h1>
+    <div id="setup">
+      <h2>Setup Questions</h2>
+      <div class="input-group">
+        <label for="num-questions">Number of Questions:</label>
+        <input type="number" id="num-questions" min="1" placeholder="Enter number of questions">
+        <button onclick="setNumQuestions()">Set</button>
+      </div>
+      <div id="question-setup" style="display: none;">
+        <div class="input-group">
+          <label for="time-interval">Time Interval (seconds):</label>
+          <input type="number" id="time-interval" min="1" placeholder="Enter time interval between questions">
+          <button onclick="setTimeInterval()">Set</button>
+        </div>
+        <div id="questions-input"></div>
+        <button id="start-btn" style="display: none;" onclick="startAssignment()">Start Assignment</button>
+      </div>
+    </div>
+    <div id="assignment" style="display: none;">
+      <h2>Assignment</h2>
+      <div id="question-box" class="question-box"></div>
+      <div id="answer-box" class="question-box"></div>
+      <button onclick="showAnswer()">Show Answer</button>
+      <button onclick="repeatQuestion()">Repeat</button>
+      <button onclick="prevQuestion()">Previous</button>
+      <button onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
