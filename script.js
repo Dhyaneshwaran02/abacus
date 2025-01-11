@@ -159,7 +159,7 @@ function showAnswer() {
 
     sequences.forEach((operation) => {
       const operator = operation[0];
-      const value = parseFloat(operation.slice(1));
+      const value = parseFloat(operation.slice(1)); // Parse the numeric part
 
       switch (operator) {
         case "+":
@@ -179,9 +179,12 @@ function showAnswer() {
       }
     });
 
-    document.getElementById("answer-box").innerHTML = result.toFixed(2);
+    // Determine if the result is an integer
+    const formattedResult = Number.isInteger(result) ? result : result.toFixed(3);
+
+    document.getElementById("answer-box").textContent = `Answer: ${formattedResult}`;
   } catch (error) {
-    alert("Error in calculating the result.");
+    alert(`Error in calculating the answer: ${error.message}`);
   }
 }
 
