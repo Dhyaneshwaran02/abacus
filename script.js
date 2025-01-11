@@ -2,7 +2,7 @@ let numQuestions = 0;
 let timeInterval = 0;
 let questions = [];
 let currentQuestionIndex = 0;
-let intervalId;
+let currentSequenceIndex = 0;
 
 // Step 1: Set the number of questions
 function setNumQuestions() {
@@ -30,17 +30,18 @@ function setTimeInterval() {
   renderQuestionInputForms();
 }
 
-// Step 3: Render input forms for each question (allowing sequences with operations)
+// Step 3: Render input forms for each question
 function renderQuestionInputForms() {
   const questionsInput = document.getElementById("questions-input");
   questionsInput.innerHTML = "";
 
   for (let i = 0; i < numQuestions; i++) {
+    const questionLetter = String.fromCharCode(65 + i); // Convert index to A, B, C, ...
     questionsInput.innerHTML += `
       <div>
-        <h4>Question ${i + 1}</h4>
+        <h4>Question ${questionLetter}</h4>
         <div id="sequences-${i}">
-          <input type="text" id="operation-${i}-0" placeholder="Enter number with operation (e.g., +5)">
+          <input type="text" id="operation-${i}-0" placeholder="Enter operation (e.g., *2, +5)">
         </div>
         <button onclick="addSequence(${i})">Add Sequence</button>
       </div>
@@ -49,12 +50,12 @@ function renderQuestionInputForms() {
   questionsInput.innerHTML += `<button onclick="saveQuestions()">Save Questions</button>`;
 }
 
-// Step 4: Add sequences (numbers with operations) dynamically for a specific question
+// Step 4: Add sequences dynamically
 function addSequence(questionIndex) {
   const sequencesDiv = document.getElementById(`sequences-${questionIndex}`);
   const newIndex = sequencesDiv.children.length;
   sequencesDiv.innerHTML += `
-    <input type="text" id="operation-${questionIndex}-${newIndex}" placeholder="Enter number with operation (e.g., +5)">
+    <input type="text" id="operation-${questionIndex}-${newIndex}" placeholder="Enter operation (e.g., *2, +5)">
   `;
 }
 
@@ -69,15 +70,15 @@ function saveQuestions() {
 
     for (const input of sequenceInputs) {
       const value = input.value.trim();
-      if (!value.match(/^[+-]?\d+$/)) {
-        alert(`Invalid input in Question ${i + 1}. Make sure all inputs are numbers with operations (e.g., +5, -3).`);
+      if (!value.match(/^[+\-*/]\d+(\.\d+)?$/)) {
+        alert(`Invalid input in Question ${String.fromCharCode(65 + i)}. Ensure each input is in the format: operator followed by an integer or decimal number (e.g., +5, -3, *2.5, /4.75).`);
         return;
       }
-      sequences.push(parseInt(value, 10));
+      sequences.push(value);
     }
 
     if (sequences.length === 0) {
-      alert(`Please enter at least one sequence for Question ${i + 1}.`);
+      alert(`Please enter at least one sequence for Question ${String.fromCharCode(65 + i)}.`);
       return;
     }
 
@@ -94,7 +95,7 @@ function startAssignment() {
   showQuestion(0);
 }
 
-// Step 7: Display each question with its sequences
+// Step 7: Display each question with its sequences and blank screen
 function showQuestion(index) {
   if (index < 0 || index >= questions.length) return;
   currentQuestionIndex = index;
@@ -104,49 +105,95 @@ function showQuestion(index) {
   questionBox.innerHTML = "";
   answerBox.innerHTML = "";
 
+  const questionLetter = String.fromCharCode(65 + index); // Convert index to A, B, C, ...
   const sequences = questions[index];
-  let sequenceIndex = 0;
+  currentSequenceIndex = 0;
 
-  clearInterval(intervalId);
-  intervalId = setInterval(() => {
-    if (sequenceIndex < sequences.length) {
+  displaySequence(sequences, questionLetter);
+}
+
+function displaySequence(sequences, questionLetter) {
+  const questionBox = document.getElementById("question-box");
+
+  if (currentSequenceIndex < sequences.length) {
+    // Keep the question letter displayed and show a blank for the sequence part
+    questionBox.innerHTML = `
+      <div>
+        <span style="font-size: 10rem; font-weight: bold;">${questionLetter}</span><br>
+        <span style="font-size: 12rem; font-weight: bold;">&nbsp;</span> <!-- Blank for the sequence -->
+      </div>
+    `;
+
+    setTimeout(() => {
+      // Display the current sequence
       questionBox.innerHTML = `
         <div>
-          <span style="font-size: 5rem; font-weight: bold;">Question ${index + 1}</span><br>
-          <span style="font-size: 10rem; font-weight: bold;">${sequences[sequenceIndex]}</span>
+          <span style="font-size: 10rem; font-weight: bold;">${questionLetter}</span><br>
+          <span style="font-size: 15rem; font-weight: bold;">${sequences[currentSequenceIndex]}</span>
         </div>
       `;
-      sequenceIndex++;
-    } else {
-      clearInterval(intervalId);
-      questionBox.innerHTML = `<span style="font-size: 5rem; font-weight: bold;">Question ${index + 1} - END</span>`;
-    }
-  }, timeInterval * 1000);
+
+      // Move to the next sequence after the time interval
+      currentSequenceIndex++;
+      setTimeout(() => {
+        displaySequence(sequences, questionLetter);
+      }, timeInterval * 1000); // Wait for the time interval before the next sequence
+    }, timeInterval * 1000); // Blank interval
+  } else {
+    // End of the question sequences
+    questionBox.innerHTML = `
+      <div>
+        <span style="font-size: 10rem; font-weight: bold;">${questionLetter}</span><br>
+        <span style="font-size: 7rem; font-weight: bold;">END</span>
+      </div>
+    `;
+  }
 }
+
 
 // Step 8: Show the calculated answer for the current question
 function showAnswer() {
   const sequences = questions[currentQuestionIndex];
-  const answer = sequences.reduce((sum, num) => sum + num, 0);
-  document.getElementById("answer-box").textContent = `Answer: ${answer}`;
-}
+  try {
+    let result = 0; // Initial value
 
-// Step 9: Navigate to the previous question
-function prevQuestion() {
-  if (currentQuestionIndex > 0) {
-    showQuestion(currentQuestionIndex - 1);
+    sequences.forEach((operation) => {
+      const operator = operation[0];
+      const value = parseFloat(operation.slice(1));
+
+      switch (operator) {
+        case "+":
+          result += value;
+          break;
+        case "-":
+          result -= value;
+          break;
+        case "*":
+          result *= value;
+          break;
+        case "/":
+          result /= value;
+          break;
+        default:
+          throw new Error("Invalid operator.");
+      }
+    });
+
+    document.getElementById("answer-box").innerHTML = result.toFixed(2);
+  } catch (error) {
+    alert("Error in calculating the result.");
   }
 }
 
-// Step 10: Navigate to the next question
-function nextQuestion() {
-  if (currentQuestionIndex < questions.length - 1) {
-    showQuestion(currentQuestionIndex + 1);
-  }
-}
-
-// Step 11: Repeat the current question
+// Navigation functions
 function repeatQuestion() {
-    showQuestion(currentQuestionIndex);
-  }
-  
+  showQuestion(currentQuestionIndex);
+}
+
+function prevQuestion() {
+  showQuestion(currentQuestionIndex - 1);
+}
+
+function nextQuestion() {
+  showQuestion(currentQuestionIndex + 1);
+}
