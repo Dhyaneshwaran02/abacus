@@ -69,11 +69,19 @@ function saveQuestions() {
     const sequences = [];
 
     for (const input of sequenceInputs) {
-      const value = input.value.trim();
+      let value = input.value.trim();
+
+      // If the input is a number without an operator, prepend "+"
+      if (value.match(/^\d+(\.\d+)?$/)) {
+        value = `+${value}`;
+      }
+
+      // Validate input
       if (!value.match(/^[+\-*/]\d+(\.\d+)?$/)) {
         alert(`Invalid input in Question ${String.fromCharCode(65 + i)}. Ensure each input is in the format: operator followed by an integer or decimal number (e.g., +5, -3, *2.5, /4.75).`);
         return;
       }
+
       sequences.push(value);
     }
 
@@ -87,6 +95,7 @@ function saveQuestions() {
 
   document.getElementById("start-btn").style.display = "block";
 }
+
 
 // Step 6: Start the assignment
 function startAssignment() {
@@ -125,11 +134,13 @@ function displaySequence(sequences, questionLetter) {
     `;
 
     setTimeout(() => {
-      // Display the current sequence
+      // Display the current sequence with formatted symbols
+      const formattedSequence = formatOperation(sequences[currentSequenceIndex]);
+
       questionBox.innerHTML = `
         <div>
           <span style="font-size: 10rem; font-weight: bold;">${questionLetter}</span><br>
-          <span style="font-size: 15rem; font-weight: bold;">${sequences[currentSequenceIndex]}</span>
+          <span style="font-size: 15rem; font-weight: bold;">${formattedSequence}</span>
         </div>
       `;
 
@@ -150,8 +161,6 @@ function displaySequence(sequences, questionLetter) {
   }
 }
 
-
-// Step 8: Show the calculated answer for the current question
 function showAnswer() {
   const sequences = questions[currentQuestionIndex];
   try {
@@ -187,6 +196,24 @@ function showAnswer() {
     alert(`Error in calculating the answer: ${error.message}`);
   }
 }
+
+// Helper function to format the operation for display
+function formatOperation(operation) {
+  const operator = operation[0];
+  const value = operation.slice(1);
+
+  switch (operator) {
+    case "+":
+      return value; // Omit the "+" symbol for positive numbers
+    case "*":
+      return `×${value}`; // Use the traditional multiplication symbol
+    case "/":
+      return `÷${value}`; // Use the traditional division symbol
+    default:
+      return `${operator}${value}`;
+  }
+}
+
 
 // Navigation functions
 function repeatQuestion() {
